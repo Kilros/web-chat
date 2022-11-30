@@ -18,12 +18,13 @@ inputField.onkeyup = ()=>{
 }
 
 function selectUser(id) {
-    $("#idChat").html(id);
     if(window.innerWidth < 720){
         $("#nav").hide();
         $("#chat").show();
         $("#back").show();
     }
+    // $("#count").html(0);
+    // $("#numberLine").html(0);
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -31,19 +32,19 @@ function selectUser(id) {
     });
     $.post('/admin/chat', {
         'action' : 'get_chat',
+        'actionDetail' : 'select',
         'id' : id,
-        'load' : 15, 
-    }, function(data){
+    },function(data){
         $('#nameUserChat').html(data.name);
         $('#imageChat').attr("src",data.image);
         $('#statusUserChat').html(data.status);
-        chatBox.innerHTML = data.msg;
+        $(".chat-box").html(data.msg);   
         $("#count").html(data.count);
         $("#numberLine").html(data.load);
+        $("#idChat").html(id);
+        // $(".chat-box").animate({ scrollTop: $(".chat-box").prop('scrollHeight')});
+        scrollToBottom(); 
         // count = parseInt(data.count);
-        if(!chatBox.classList.contains("active")){
-            scrollToBottom();
-        }        
     });    
 }
 
@@ -77,70 +78,74 @@ chatBox.onmouseleave = ()=>{
     chatBox.classList.remove("active");
 }
 setInterval(() =>{
-    id = $("#idChat").html();
-    numberLine = $("#numberLine").html();
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
       });
-      $.post('/admin/chat', {
+    $.post('/admin/chat', {
         'action' : 'get_chat',
-        'id' : id,
-        'load' : numberLine,
+        'actionDetail' : 'single',
+        'id' : $("#idChat").html(),
+        'load' : $("#numberLine").html(),
         'count' : $("#count").html(),
       }, function(data){
         $('#nameUserChat').html(data.name);
         $('#statusUserChat').html(data.status);
-        // console.log(data);
+        $('#imageChat').attr("src",data.image);
         if(data.msg){
             $(".chat-box").append(data.msg);
             $("#count").html(data.count);
-            // if(!chatBox.classList.contains("active")){
-            scrollToBottom();
-            // } 
-        }
-        // count = parseInt(data.count);    
+            $("#numberLine").html(data.load);
+            scrollToBottom(); 
+        } 
       });
 }, 1000);
-function getchat() {
-    id = $("#idChat").html();
-    numberLine = $("#numberLine").html();
+function loadChat() {
+    var load = $("#numberLine").html();
+    if(parseInt($("#count").html()) - parseInt($("#numberLine").html()) < 10){
+        $("#numberLine").html(parseInt($("#numberLine").html())+10);
+    }
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-      $.post('/admin/chat', {
+    $.post('/admin/chat', {
         'action' : 'get_chat',
-        'id' : id,
-        'load' : numberLine,
-      }, function(data){
-        $('#nameUserChat').html(data.name);
-        $('#statusUserChat').html(data.status);
-        chatBox.innerHTML = data.msg;
+        'actionDetail' : 'load',
+        'id' : $("#idChat").html(),
+        'load' : load,
+    }, function(data){
+        $(".chat-box").prepend(data.msg);
         $("#count").html(data.count);
-        $("#numberLine").html(data.load);
-        // count = parseInt(data.count);
-        // if(!chatBox.classList.contains("active")){
-        scrollToBottom();
-        // }     
+        $("#numberLine").html(data.load)
+        $("#load").hide();   
+        $('.chat-box').css('overflow-y','auto');
     });
 }
 function scrollToBottom(){
-    chatBox.scrollTop = chatBox.scrollHeight;
+    new Promise(function(resolve, reject) {
+        setTimeout(() => resolve($(".chat-box").prop('scrollHeight')), 200); // (*)
+    }).then(function(result) {
+        $(".chat-box").animate({ scrollTop: result}, 200);
+    });
+    // $(".chat-box").animate({ scrollTop: $(".chat-box")[0].scrollHeight}, 500);
+    // chatBox.scrollTop = chatBox.scrollHeight;
 }
-var currentScroll = chatBox.scrollTop;
-chatBox.addEventListener("scroll", (event) => {
-    if(chatBox.scrollTop <= 10){
-        load = parseInt($("#numberLine").html());
-        if(load < $("#count").html()){
-            $("#numberLine").html(load+6);
-            getchat(); 
+$(document ).ready(function() {
+    chatBox.addEventListener("scroll", (event) => {
+        if(chatBox.scrollTop <= 10){
             chatBox.scrollTop = 20;
+            if(parseInt($("#numberLine").html()) < parseInt($("#count").html()) && $("#count").html()!='0'){
+                $('#load').show();
+                $('.chat-box').css('overflow-y','visible');
+                loadChat();    
+            }
         }
-    }
+    });
 });
+
 
 const input = document.getElementById('image_uploads')
 input.addEventListener('change', updateImageDisplay);
@@ -150,6 +155,7 @@ function getExtension(filename) {
     return parts[parts.length - 1];
 }
 function updateImageDisplay() {
+    $('#load').show();
     const curFiles = input.files;
     id = $("#idChat").html();
     $.ajaxSetup({
@@ -177,7 +183,7 @@ function updateImageDisplay() {
                     processData: false,
                     success: function(response){    
                         if(response == 1){
-                            
+                            $("#load").hide(); 
                         }else{
                             alert(response);
                         }

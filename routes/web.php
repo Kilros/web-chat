@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FileController;
+use PhpParser\Node\Expr\Yield_;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,4 +32,9 @@ Route::prefix('admin')->middleware('verifyuser')->group(function (){
     Route::post('/', [ChatController::class, 'userAction']);
     // Route::get('/chat', [ChatController::class, 'chat'])->name('chat');
     Route::post('/chat', [ChatController::class, 'chatAction']);
+    // Route::post('/sent', [ChatController::class, 'sent']);
+    // Route::post('/get', [ChatController::class, 'get']);
+    Route::post('/change-password', [UserController::class, 'changePassword'])->name('changePassword');
+    Route::post('/change-profile', [UserController::class, 'changeProfile'])->name('changeProfile');
 });
+Route::get('/appchat/file/{filename}', [FileController::class, 'readFile']);

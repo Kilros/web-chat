@@ -21,11 +21,15 @@
     {{-- <script src="{{ asset('assets/chat/js/test.js'); }}"></script> --}}
 </head>
 <body>
-    {{-- <audio id="player" controls="controls" autoplay="autoplay"> --}}
-    </audio>
+    {{-- </audio>
     {{-- <div id="header">
         Header
     </div> --}}
+    @if (Session::has('message'))
+        <script>
+            alert('{{ Session::get('message') }}');
+        </script>
+    @endif
     <div id="content">
         <div id="nav">
             @yield('nav')

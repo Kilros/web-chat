@@ -39,17 +39,20 @@ function requestp2(path, data)
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-    $.post("/admin/chat", data, function(response){ 
+    $.post("/admin/sent", data, function(response){ 
             // var data = decodeURIComponent(response);
-            audio = new Audio("data:audio/wav;base64," + response);
-            var playPromise = audio.play();
-            if (playPromise !== undefined) {
-            playPromise.then(function() {
-                test();
-            }).catch(function(error) {
-                
-                });
+            // audio = new Audio("data:audio/wav;base64," + response);
+            // var playPromise = audio.play();
+            // if (playPromise !== undefined) {
+            // playPromise.then(function() {
+            if(response == "true"){
+                test()
+                // setTimeout(, 2000);
             }
+            // }).catch(function(error) {
+                
+            //     });
+            // }
             // var dataAudio = Uint8Array.from(atob(encoded), c => c.charCodeAt(0))
             // playByteArray(dataAudio);
             // tao(channels, dataAudio.length, dataAudio);
@@ -67,6 +70,31 @@ function requestp2(path, data)
     // http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     // http.send(data);
 }
+
+
+setInterval(
+    function rqAudio(){
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.post("/admin/get", {
+            "action" : 'get',
+        }, function(response){ 
+            audio = new Audio("data:audio/wav;base64," + response.msg);
+            var playPromise = audio.play();
+            if (playPromise !== undefined) {
+            playPromise.then(function() {
+                
+            }).catch(function(error) {
+                
+                });
+            }
+            // rqAudio();
+        });
+    }  
+, 2000);
 function _base64ToArrayBuffer(base64) {
     var binary_string = window.atob(base64);
     var len = binary_string.length;

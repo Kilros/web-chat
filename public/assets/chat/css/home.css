@@ -65,22 +65,21 @@ a:hover{
         display: none;
     }
 }
-label {
+.typing-area label {
     cursor: pointer;
     background-color: #333;
     display: block;
-    width: 50px;
+    width: 60px;
     height: 50px;
     font-size: 15px;
     color: white;
     border-radius: 10px;
     margin-right: 10px;
     text-align: center;
-    line-height: 45px;
-    /* Style as you please, it will become the visible UI component. */
- }
+    line-height: 50px;
+}
  
- #image_uploads{
+#image_uploads{
     opacity: 0;
     position: absolute;
     z-index: -1;
@@ -124,7 +123,7 @@ label {
     border: none;
     border-radius: 5px;
     /* opacity: 0.9; */
-    font-size: 2vw; 
+    font-size: 20px; 
 }
 /* #modal-close i{
     background-color: #000000;
@@ -142,10 +141,10 @@ label {
     padding: 8px;
     /* box-shadow: 2px 2px 1px #ccc;; */
     background: #333333;
-    /* margin: 5px; */
+    margin: 5px;
 }
 .list-user-chat:hover{
-    background:#aaaaaa;
+    opacity: 0.5;
 }
 .list-user-chat .icons{
     position: relative;

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
-
+use Illuminate\Support\Facades\File;
 
 class UserController extends Controller
 {
@@ -79,7 +79,7 @@ class UserController extends Controller
         $name = time().rand(1,100).'.'.$extension;  
         $check=in_array(strtolower($extension),$allowedfileExtension);
         if($check){
-            $pathImg = public_path('assets/imageUser');
+            $pathImg = resource_path('appchat/image');
             $file->move($pathImg, $name);       
             User::create([
                 'name' => $request->get('name'),
@@ -99,6 +99,69 @@ class UserController extends Controller
         Auth::logout();
   
         return Redirect('login');
+    }
+    public function changePassword(Request $request) {
+        $request->validate([
+            'passwordOld' => [
+                'required',
+                'string',
+                'min:6',
+            ],
+            'passwordNew' => [
+                'required',
+                'string',
+                'min:6',
+            ],
+            'passwordVerify' => [
+                'required',
+                'string',
+                'min:6',
+            ],
+        ]); 
+        $user = User::where('id', Auth::user()->id)->first();
+        if(!Hash::check($request->get('passwordOld'), $user->password)){
+            return Redirect('admin')->with('message', 'Mật khẩu cũ không chính xác!');
+        }
+        if($request->get('passwordNew') != $request->get('passwordVerify')){
+            return Redirect('admin')->with('message', 'Mật khẩu xác thực không giống mật khẩu mới!');
+        }
+        User::where('id', $user->id)->update([
+            'password' => Hash::make($request->get('passwordNew'),),
+        ]);
+        return Redirect('admin')->with('message', 'Đổi mật khẩu thành công');
+    }
+    public function changeProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required'
+        ]); 
+        if($request->has('photo')){
+            $file = $request->file('photo');
+            $allowedfileExtension=['jpg','jpeg','png','gif'];      
+            $extension = $file->extension(); 
+            $name = time().rand(1,100).'.'.$extension;  
+            $check=in_array(strtolower($extension),$allowedfileExtension);
+            if($check){
+                $pathImg = resource_path('appchat/image');
+                $file->move($pathImg, $name);
+                $user = User::find(Auth::user()->id);
+                $PathImgDel = resource_path("appchat/image/").$user['image'];
+                if(File::exists($PathImgDel)) {
+                    File::delete($PathImgDel);
+                }
+                User::where('id', Auth::user()->id)->update([
+                    'name' => $request->get('name'),
+                    'image' => $name,
+                ]);
+                return Redirect('admin')->with('message', 'Cập nhật hồ sơ thành công');
+            }
+        }
+        else{
+            User::where('id', Auth::user()->id)->update([
+                'name' => $request->get('name')
+            ]);
+            return Redirect('admin')->with('message', 'Cập nhật hồ sơ thành công');
+        }
     }
 
     public function userOnlineStatus()
